@@ -1,0 +1,16 @@
+1.0.7.83
+1.0.7.79
+01-22-2024
+OPTION
+1|0|0
+Account|34506001
+EntryTimeLimit|573
+H|344
+Tab|Account-Command
+WorkDirectoryPath|C:\Users\user\Desktop\HotStock\
+TickerListFilename|tickers.txt
+TimedVolumeListFilename|volumes.txt
+UpdateFrequency|1000
+W|648
+X|597
+Y|225

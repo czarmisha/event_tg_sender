@@ -7,6 +7,7 @@ class TelegramConfig(BaseSettings):
     BOT_TOKEN: str
     CHAT_ID: str
     CHANNEL_CHAT_ID: str
+    CLEAR_INTERVAL: int
 
     @property
     def api_url(self):
@@ -16,4 +17,4 @@ class TelegramConfig(BaseSettings):
         env_file = '.env'
         env_file_encoding = 'utf-8'
 
-tg_config = TelegramConfig()
+config = TelegramConfig()

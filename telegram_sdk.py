@@ -1,6 +1,6 @@
 import requests
 import time
-from config import tg_config
+from config import config
 
 
 class BotHandler:
@@ -10,7 +10,7 @@ class BotHandler:
     не всеми, а например отправкой сообщений или файлов
     """
     def __init__(self):
-        self.config = tg_config
+        self.config = config
         self.last_update_id = 0
 
     def get_updates(self, offset=None, timeout=30):
