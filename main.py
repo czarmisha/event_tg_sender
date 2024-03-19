@@ -10,19 +10,22 @@ tg_bot = BotHandler()
 
 
 def process_line(line):
-    _, ticker, value, volume = line.strip().split(';')
+    _, ticker, value, volume, adv, average_volume, avg_volume_percent_adv = line.strip().split(';')
     print(f"Processing {ticker}: Value={value}, Volume={volume}")
     try:
         volume_in_mlns = round(int(volume) / 1000000, 2)
-        # tg_bot.send_post(f"{ticker}: {value}({volume})")
-        tg_bot.send_message(f"{ticker}  {'+' if float(value) >= 0 else '-'}{'{:.2f}'.format(float(value))}% ({volume_in_mlns} mln.)")
+        adv_in_mlns = round(int(adv) / 1000000, 2)
+        average_volume_in_mlns = round(int(average_volume) / 1000000, 2)
+        tg_bot.send_message(
+            f"{ticker}  {'+' if float(value) >= 0 else '-'}{'{:.2f}'.format(float(value))}% "
+            f"({volume_in_mlns} m / {adv_in_mlns}m / {average_volume_in_mlns}m / {avg_volume_percent_adv}%)"
+        )
     except Exception as e:
         print('Error: ', e)
 
 
 def process_file():
     processed_tickers = get_processed_tickers()
-    # print(f'Processed tickers: {processed_tickers}')
     file_path = f'events/event_{dt.datetime.today().strftime("%d_%m_%Y")}.txt'
 
     with open(file_path, 'r') as file:
@@ -57,9 +60,8 @@ def add_ticker_to_processes(ticker):
         file.write(f'{ticker};')
 
 
-def clear_processed():
-    print('clearing processed file...')
-    file_path = f'processed/processed_{dt.datetime.today().strftime("%d_%m_%Y")}.txt'
+def clear_file(file_path: str):
+    print('clearing file...', file_path)
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     
     if os.path.exists(file_path):
@@ -71,7 +73,8 @@ def main(start_time=dt.datetime.now()):
     last_clear_time = start_time
     while True:
         if last_clear_time < dt.datetime.now() - dt.timedelta(minutes=config.CLEAR_INTERVAL):
-            clear_processed()
+            clear_file(f'processed/processed_{dt.datetime.today().strftime("%d_%m_%Y")}.txt')
+            clear_file(f'events/event_{dt.datetime.today().strftime("%d_%m_%Y")}.txt')
             last_clear_time = dt.datetime.now()
 
         process_file()
