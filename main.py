@@ -10,7 +10,6 @@ from config import config
 
 tg_bot = BotHandler()
 utc = pytz.utc
-STOCK_DATA = {}
 
 
 def get_tickers():
@@ -19,6 +18,15 @@ def get_tickers():
         tickers = [ticker.strip() for ticker in set(file.read().split('\n'))]
 
     return tickers
+
+
+def get_stock_data():
+    stock_data = {}
+    with open('stock_data.txt', 'r') as file:
+        for line in file:
+            ticker, mcap = line.strip().split(':')
+            stock_data[ticker] = mcap
+    return stock_data
 
 
 def update_stock_data():
@@ -40,15 +48,16 @@ def update_stock_data():
         else:
             print('No market cap for ' + ticker)
 
-    global STOCK_DATA
-    STOCK_DATA = stock_data
+    with open('stock_data.txt', 'w') as file:
+        for ticker, mcap in stock_data.items():
+            file.write(f"{ticker}:{mcap}\n")
 
 
-def process_line(line):
+def process_line(line, stock_data: dict):
     _, ticker, value, volume, adv, average_volume, avg_volume_percent_adv, __ = line.strip().split(';')
     print(f"Processing {ticker}: Value={value}, Volume={volume}")
     try:
-        mcap = STOCK_DATA.get(ticker)
+        mcap = stock_data.get(ticker)
         mcap = round(int(mcap) / 1000000, 2) if mcap else '-'
         volume_in_mlns = round(int(volume) / 1000000, 2)
         adv_in_mlns = round(int(adv) / 1000000, 2)
@@ -61,7 +70,7 @@ def process_line(line):
         print('Error: ', e)
 
 
-def process_file():
+def process_file(stock_data: dict):
     processed_tickers = get_processed_tickers()
     file_path = f'events/event_{dt.datetime.today().strftime("%d_%m_%Y")}.txt'
 
@@ -73,7 +82,7 @@ def process_file():
                 if ticker not in processed_tickers:
                     processed_tickers.add(ticker)
                     add_ticker_to_processes(ticker)
-                    process_line(line)
+                    process_line(line, stock_data)
             else:
                 print(f"error in line {line}")
 
@@ -108,6 +117,7 @@ def clear_file(file_path: str):
 
 def main(start_time=dt.datetime.now()):
     update_stock_data()
+    stock_data = get_stock_data()
     last_clear_time = start_time
     while True:
         if last_clear_time < dt.datetime.now() - dt.timedelta(minutes=config.CLEAR_INTERVAL):
@@ -115,7 +125,7 @@ def main(start_time=dt.datetime.now()):
             clear_file(f'events/event_{dt.datetime.today().strftime("%d_%m_%Y")}.txt')
             last_clear_time = dt.datetime.now()
 
-        process_file()
+        process_file(stock_data)
         time.sleep(1)
 
 if __name__ == '__main__':
