@@ -58,13 +58,11 @@ def process_line(line, stock_data: dict):
     print(f"Processing {ticker}: Value={value}, Volume={volume}")
     try:
         mcap = stock_data.get(ticker)
-        mcap = round(int(mcap) / 1000000, 2) if mcap else '-'
-        volume_in_mlns = round(int(volume) / 1000000, 2)
-        adv_in_mlns = round(int(adv) / 1000000, 2)
-        average_volume_in_mlns = round(int(average_volume) / 1000000, 2)
+        mcap = round(int(mcap) / 1000000000, 1) if mcap else '-'
+        average_volume_in_mlns = round(int(average_volume) / 1000000, 3)
         tg_bot.send_message(
-            f"{ticker}  {'+' if float(value) >= 0 else '-'}{'{:.2f}'.format(float(value))}% "
-            f"({mcap} m / {volume_in_mlns} m / {adv_in_mlns}m / {average_volume_in_mlns}m / {'{:.2f}'.format(float(avg_volume_percent_adv))}%)"
+            f"{ticker} ({mcap}B / {'+' if float(value) >= 0 else ''}{'{:.2f}'.format(float(value))}% /"
+            f" {average_volume_in_mlns}M)"
         )
     except Exception as e:
         print('Error: ', e)
